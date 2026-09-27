@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>薬歴テンプレート</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+  /* --- 2026 Modern Layout Base --- */
+  body {
+    padding: 15px;
+    padding-top: 75px !important;
+    background-color: #f0f2f5;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+    color: #333;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+  .fade-in { animation: fadeIn 0.6s ease-out; }
+  .slide-down { animation: slideDown 0.5s ease-out; }
+  .pulse { animation: pulse 1s infinite; }
+
+  #input-section { position: relative; width: 100%; }
+
+  .header-outer-container {
+    position: fixed;
+    top: 70px !important;
+    right: 20px;
+    width: 46%;
+    z-index: 1000;
+  }
+
+  .header-panel {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    padding: 18px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    border: 1px solid rgba(13, 110, 253, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .header-panel:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+    background: #ffffff;
+  }
+
+  .result-area {
+    background: #ffffff;
+    padding: 12px 15px 12px 25px;
+    border-radius: 10px;
+    min-height: 90px;
+    max-height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border: 2px solid #0d6efd;
+    font-size: 1.15rem;
+    font-weight: bold;
+    line-height: 1.6;
+    color: #212529;
+  }
+
+  .copy-badge {
+    position: absolute;
+    top: 18px;
+    right: 150px;
+    display: none;
+    background: #198754;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    z-index: 1001;
+  }
+
+  .btn-reset-custom {
+    background: #fff1f1;
+    color: #dc3545;
+    border: 1px solid #ffc1c1;
+    border-radius: 8px;
+    padding: 5px 15px;
+    font-weight: bold;
+    pointer-events: none;
+  }
+
+  .table-container {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    width: 100%;
+  }
+
+  .table tr { cursor: pointer; transition: background 0.2s; }
+  .table tr:hover { background-color: #f8fbff; }
+  .row-selected {
+    background-color: #e7f1ff !important;
+    border-left: 6px solid #0d6efd;
+  }
+
+  .category-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    color: white !important;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-right: 12px;
+    white-space: nowrap;
+    border: none;
+  }
+  .bg-cat-0 { background-color: #6c757d !important; }
+  .bg-cat-1 { background-color: #0d6efd !important; }
+  .bg-cat-2 { background-color: #198754 !important; }
+  .bg-cat-3 { background-color: #dc3545 !important; }
+  .bg-cat-4 { background-color: #fd7e14 !important; }
+  .bg-cat-5 { background-color: #6f42c1 !important; }
+  .bg-cat-6 { background-color: #0dcaf0 !important; color: #000 !important; }
+  .bg-cat-7 { background-color: #d63384 !important; }
+
+  .drug-text { font-size: 1.1rem; font-weight: bold; }
+
+  .form-check-input {
+    width: 2.4em; height: 2.4em; cursor: pointer; border: 2px solid #dee2e6;
+  }
+
+  .config-ui {
+    display: none;
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+  }
+
+  .config-table th, .config-table td {
+    vertical-align: middle;
+    padding: 8px !important;
+  }
+
+  .col-category { width: 90px; }
+  .col-tags { width: 65px; }
+  .col-check { width: 60px; }
+  .col-action { width: 180px; white-space: nowrap; }
+
+  .shadow-hover { transition: all 0.3s ease; }
+  .shadow-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3) !important;
+  }
+
+  .spinner-border { border-width: 0.25em; }
+
+  .fs-5.fw-bold {
+    font-family: 'Segoe UI', Meiryo, sans-serif;
+    user-select: none;
+  }
+
+  .d-flex.align-items-center.justify-content-between.mb-3.mt-2.px-3 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #f0f2f5;
+    z-index: 1100;
+    padding-top: 15px;
+    display: flex !important;
+  }
+
+  @media (max-width: 576px) {
+    .d-flex.align-items-center.justify-content-between.mb-3.mt-2.px-3 {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 10px;
+      position: relative;
+    }
+  }
+
+  .result-word {
+    display: inline;
+    padding: 1px 4px;
+    margin: 0 -1px;
+    border-radius: 4px;
+  }
+
+  #link-container a { transition: all 0.2s; color: #6c757d; }
+  #link-container a:hover { background-color: #e9ecef; color: #0d6efd; }
+
+  @media (max-width: 768px) {
+    #link-container { display: none; }
+  }
+
+  #link-container { margin-left: 2rem !important; }
+
+  .custom-link-btn.btn-warning {
+    background-color: #ffda08 !important;
+    border: 1px solid #e1c000 !important;
+    color: #000 !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+  }
+
+  .custom-link-btn.btn-warning:hover {
+    background-color: #ffe552 !important;
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    border-color: #ffda08 !important;
+  }
+
+  .custom-link-btn i { color: #d63384; }
+
+  .word-bg-0 { background-color: rgba(108, 117, 125, 0.2); }
+  .word-bg-1 { background-color: rgba(13, 110, 253, 0.2); }
+  .word-bg-2 { background-color: rgba(25, 135, 84, 0.2); }
+  .word-bg-3 { background-color: rgba(220, 53, 69, 0.2); }
+  .word-bg-4 { background-color: rgba(253, 126, 20, 0.2); }
+  .word-bg-5 { background-color: rgba(111, 66, 193, 0.2); }
+  .word-bg-6 { background-color: rgba(13, 202, 240, 0.2); }
+  .word-bg-7 { background-color: rgba(214, 51, 132, 0.2); }
+
+  .compact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 6px;
+    padding: 4px;
+  }
+
+  .compact-item {
+    background: white;
+    border: 1.5px solid #dee2e6;
+    border-radius: 10px;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .compact-item:hover {
+    border-color: #0d6efd;
+    background: #f8fbff;
+  }
+
+  .compact-item.selected {
+    background: #e7f1ff;
+    border-color: #0d6efd;
+    border-width: 2px;
+  }
+
+  .compact-item .compact-category {
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: white;
+    border-radius: 4px;
+    padding: 1px 6px;
+    display: inline-block;
+    margin-bottom: 3px;
+  }
+
+  .compact-item .compact-text {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #212529;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* --- ローカル保存版で追加したUI --- */
+  .local-panel {
+    background: #f8f9fa;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    border: 1px solid #e9ecef;
+  }
+  .local-panel h6 { display:flex; align-items:center; gap:6px; }
+</style>
+</head>
+<body>
+
+<div class="container-fluid p-0 fade-in">
+  <div class="d-flex align-items-center justify-content-between mb-3 mt-2 px-3">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-capsule-pill text-primary fs-4 me-2"></i>
+      <span class="fs-5 fw-bold text-dark" style="letter-spacing: 1px;">薬歴テンプレート</span>
+      <div id="link-container" class="ms-4 d-flex gap-2"></div>
+    </div>
+    <div class="d-flex gap-2">
+      <button id="btn-input" class="btn btn-primary shadow-sm" onclick="switchMode('input')">
+        <i class="bi bi-pencil-square"></i> 入力モード
+      </button>
+      <button id="btn-compact" class="btn btn-outline-secondary shadow-sm" onclick="switchInputView('compact')" style="display:none;">
+        <i class="bi bi-grid"></i> コンパクト
+      </button>
+      <button id="btn-detail" class="btn btn-outline-secondary shadow-sm" onclick="switchInputView('detail')" style="display:none;">
+        <i class="bi bi-list-ul"></i> 詳細
+      </button>
+      <button id="btn-config" class="btn btn-outline-secondary shadow-sm" onclick="switchMode('config')">
+        <i class="bi bi-gear"></i> 設定・管理
+      </button>
+    </div>
+  </div>
+
+  <div id="input-section" class="mode-content">
+
+    <!-- 詳細モード（従来） -->
+    <div id="view-detail">
+      <div class="header-outer-container">
+        <div class="header-panel slide-down" onclick="showResetModal()" title="クリックしてリセット">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="m-0 text-dark fw-bold" style="font-size: 1rem;">作成された指示文</h5>
+            <div id="copy-status" class="copy-badge pulse">コピーしました</div>
+            <button class="btn btn-reset-custom btn-sm">選択をリセット</button>
+          </div>
+          <div id="result" class="result-area">選択してください</div>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="table table-hover align-middle mb-0">
+          <tbody id="input-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- コンパクトモード（新規） -->
+    <div id="view-compact">
+      <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+        <span id="compact-copy-status" class="copy-badge-inline" style="display:none; background:#198754; color:white; padding:4px 14px; border-radius:20px; font-size:0.85rem;">コピーしました</span>
+        <button class="btn btn-sm btn-outline-danger ms-auto" onclick="showResetModal()">
+          <i class="bi bi-arrow-counterclockwise"></i> 選択をリセット
+        </button>
+      </div>
+      <div id="compact-grid" class="compact-grid"></div>
+    </div>
+
+  </div>
+
+  <!-- 【設定・管理モード】 -->
+  <div id="config-section" class="config-ui mode-content">
+
+    <!-- データのバックアップ／復元 -->
+    <div class="local-panel">
+      <h6 class="fw-bold mb-2"><i class="bi bi-hdd-fill text-primary"></i>データの保存場所について</h6>
+      <p class="text-muted small mb-3">
+        このアプリのデータは、サーバーではなく<strong>この端末のブラウザ内</strong>にのみ保存されます。
+        ブラウザのデータを消去したり、他の端末・他のブラウザで開いたりすると内容は引き継がれません。
+        機種変更前や定期的なタイミングで、下の「バックアップ」を必ず行ってください。
+      </p>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-success" onclick="exportBackup()">
+          <i class="bi bi-download"></i> JSONファイルにバックアップ
+        </button>
+        <button class="btn btn-outline-secondary" onclick="document.getElementById('importFileInput').click()">
+          <i class="bi bi-upload"></i> JSONファイルから復元
+        </button>
+        <input type="file" id="importFileInput" accept="application/json,.json" style="display:none" onchange="importBackup(event)">
+        <button class="btn btn-outline-danger ms-auto" onclick="resetAllData()">
+          <i class="bi bi-exclamation-triangle"></i> 初期状態に戻す
+        </button>
+      </div>
+    </div>
+
+    <!-- お気に入りリンク管理 -->
+    <div class="local-panel">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="bi bi-star-fill text-warning"></i>お気に入りリンクの管理</h6>
+        <button class="btn btn-sm btn-outline-primary" onclick="addLink()">＋ リンクを追加</button>
+      </div>
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr class="table-light text-center">
+            <th style="width:35%;">表示名</th>
+            <th>URL</th>
+            <th style="width:80px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="link-config-body"></tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5 class="m-0 fw-bold">項目の管理・並べ替え</h5>
+      <span class="badge bg-info text-dark">配布版</span>
+    </div>
+    <div style="max-height: calc(100vh - 200px); overflow-y: auto;">
+      <table class="table table-sm align-middle config-table">
+        <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10;">
+          <tr class="table-light text-center">
+            <th class="col-category">区分</th>
+            <th class="col-text">薬品・表示文言</th>
+            <th class="col-tags">F</th>
+            <th class="col-tags">G</th>
+            <th class="col-tags">H</th>
+            <th class="col-check">改行無</th>
+            <th class="col-action">操作</th>
+          </tr>
+        </thead>
+      <tbody id="config-table-body"></tbody>
+      </table>
+    </div>
+    <div class="d-flex gap-3 mt-3">
+      <button class="btn btn-success shadow-sm px-4" onclick="addNewRow()">＋ 新しい項目を末尾に追加</button>
+      <button class="btn btn-primary flex-grow-1 p-3 fw-bold shadow shadow-hover" onclick="saveLocalData()">
+        この内容をこの端末に保存する
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- リセット確認モーダル -->
+<div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-0 bg-light">
+        <h5 class="modal-title fw-bold" id="resetModalLabel">確認</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <p class="mb-0 fs-5">選択されている項目をすべて解除しますか？</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">キャンセル</button>
+        <button type="button" class="btn btn-danger px-4 shadow-sm fw-bold" onclick="executeReset()">リセットする</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 保存中モーダル -->
+<div class="modal fade" id="savingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-body text-center py-4">
+        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="fw-bold text-primary">この端末に保存中...</div>
+        <div class="text-muted small mt-2">そのまま少々お待ちください</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 未保存確認モーダル -->
+<div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-0 bg-light">
+        <h5 class="modal-title fw-bold">設定が変更されています</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <p class="mb-0">変更を保存してから入力画面に戻りますか？</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-outline-danger px-4" onclick="forceQuit()">破棄して戻る</button>
+        <button type="button" class="btn btn-primary px-4 shadow-sm fw-bold" onclick="saveAndQuit()">保存して戻る</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 完了通知モーダル -->
+<div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content shadow-lg border-0" style="border-radius: 20px;">
+      <div class="modal-body text-center py-4">
+        <i class="bi bi-check-circle-fill text-success fs-1 mb-2 d-block"></i>
+        <div class="fw-bold fs-5">保存完了</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+  crossorigin="anonymous"></script>
+
+<script>
+// ===================================================================
+// ローカル保存（localStorage）関連
+// サーバーやスプレッドシートの代わりに、この端末のブラウザ内にデータを保存する
+// ===================================================================
+const STORAGE_KEY_MASTER = 'yakureki_masterData';
+const STORAGE_KEY_LINKS  = 'yakureki_linkData';
+
+function getDefaultMasterData() {
+  return [
+    { category: '例', text: 'これはサンプルの文言です。「設定・管理」から自由に編集・削除してください。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '例', text: '同じ「区分」を持つ項目は同じ色で表示されます。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '例', text: 'F/G/Hに小文字でタグを入れると、同じタグを持つ項目同士が読点（、）でつながって表示されます。', fgh: ['', '', ''], noLineBreak: false, checked: false }
+  ];
+}
+
+function loadMasterData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_MASTER);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.error('マスタデータの読み込みに失敗しました', e);
+  }
+  return getDefaultMasterData();
+}
+
+function loadLinkData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_LINKS);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.error('リンクデータの読み込みに失敗しました', e);
+  }
+  return [];
+}
+
+function saveMasterDataLocal(data) {
+  localStorage.setItem(STORAGE_KEY_MASTER, JSON.stringify(data));
+}
+
+function saveLinkDataLocal(data) {
+  localStorage.setItem(STORAGE_KEY_LINKS, JSON.stringify(data));
+}
+
+// ===================================================================
+// 状態管理
+// ===================================================================
+let masterData = loadMasterData();
+let linkData = loadLinkData();
+let isDirty = false;
+let pendingMode = null;
+
+window.onload = () => {
+  masterData = dataCleansing(masterData);
+  renderLinks(linkData);
+  renderAll();
+  // デフォルトでコンパクトモードを起動
+  switchInputView('compact');
+  document.getElementById('btn-compact').style.display = 'inline-flex';
+  document.getElementById('btn-detail').style.display = 'inline-flex';
+};
+
+function renderLinks(links) {
+  const container = document.getElementById('link-container');
+  if (!container || !links) return;
+  container.innerHTML = links.filter(l => l.name && l.url).map(link => `
+    <a href="${link.url}" target="_blank"
+       class="btn btn-sm btn-warning rounded-pill px-3 py-1 fw-bold custom-link-btn text-dark">
+      <i class="bi bi-star-fill me-1"></i>${link.name}
+    </a>
+  `).join('');
+}
+
+function dataCleansing(data) {
+  return data.map(row => {
+    row.fgh = (row.fgh || ["", "", ""]).map(tag => tag ? String(tag).replace(/,/g, '').trim() : "");
+    return row;
+  });
+}
+
+function renderAll() {
+  renderInputTable();
+  renderConfigTable();
+  renderLinkConfig();
+}
+
+function switchMode(mode) {
+  if (mode === 'input' && isDirty) {
+    pendingMode = mode;
+    new bootstrap.Modal(document.getElementById('confirmSaveModal')).show();
+    return;
+  }
+  executeSwitchMode(mode);
+}
+
+function executeSwitchMode(mode) {
+  const isInput = (mode === 'input');
+  document.getElementById('input-section').style.display = isInput ? 'block' : 'none';
+  document.getElementById('config-section').style.display = isInput ? 'none' : 'block';
+  document.getElementById('btn-input').className = isInput ? 'btn btn-primary shadow-sm' : 'btn btn-outline-secondary shadow-sm';
+  document.getElementById('btn-config').className = isInput ? 'btn btn-outline-secondary shadow-sm' : 'btn btn-primary shadow-sm';
+
+  // コンパクト/詳細ボタンの表示切り替え
+  document.getElementById('btn-compact').style.display = isInput ? 'inline-flex' : 'none';
+  document.getElementById('btn-detail').style.display = isInput ? 'inline-flex' : 'none';
+
+  if (isInput) switchInputView(currentInputView);
+  isDirty = false;
+}
+
+function forceQuit() {
+  isDirty = false;
+  bootstrap.Modal.getInstance(document.getElementById('confirmSaveModal')).hide();
+  executeSwitchMode('input');
+}
+
+function saveAndQuit() {
+  bootstrap.Modal.getInstance(document.getElementById('confirmSaveModal')).hide();
+  saveLocalData(true);
+}
+
+function getCategoryColorClass(category) {
+  if (!category) return 'bg-cat-0';
+  const categories = [...new Set(masterData.map(d => d.category).filter(Boolean))];
+  const index = categories.indexOf(category);
+  return `bg-cat-${(index % 7) + 1}`;
+}
+
+function renderInputTable() {
+  const tbody = document.getElementById('input-table-body');
+  tbody.innerHTML = masterData.map((row, i) => {
+    const colorClass = getCategoryColorClass(row.category);
+    return `
+      <tr onclick="toggleCheck(${i})" class="${row.checked ? 'row-selected' : ''}">
+        <td style="width: 60px;" class="text-center">
+          <input type="checkbox" class="form-check-input" ${row.checked ? 'checked' : ''} onclick="event.stopPropagation(); toggleCheck(${i})">
+        </td>
+        <td>
+          <div class="d-flex align-items-center">
+            ${row.category ? `<span class="category-badge ${colorClass}">${row.category}</span>` : ''}
+            <span class="fw-bold drug-text">${row.text}</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  generateMessage();
+}
+
+function toggleCheck(index) {
+  masterData[index].checked = !masterData[index].checked;
+  if (masterData[index].checked) {
+    masterData[index].fgh.forEach((tag, colIdx) => {
+      if (tag && tag === tag.toLowerCase() && tag !== tag.toUpperCase()) {
+        const upperTag = tag.toUpperCase();
+        masterData.forEach(row => {
+          if (row.fgh[colIdx] === upperTag) row.checked = true;
+        });
+      }
+    });
+  }
+  // ビューに応じて再描画
+  if (currentInputView === 'compact') renderCompactGrid();
+  else renderInputTable();
+}
+
+function generateMessage() {
+  let htmlContent = "";
+  let plainText = "";
+  let appearedTags = new Set();
+  const selected = masterData.filter(r => r.checked);
+
+  let tagCounts = {};
+  selected.forEach(row => {
+    row.fgh.forEach((tag, colIdx) => {
+      if (tag && tag === tag.toLowerCase() && tag !== tag.toUpperCase()) {
+        const key = colIdx + "-" + tag;
+        tagCounts[key] = (tagCounts[key] || 0) + 1;
+      }
+    });
+  });
+
+  selected.forEach((row, idx) => {
+    let prefix = "";
+    let needsComma = row.fgh.some((tag, colIdx) => {
+      if (tag && tag === tag.toLowerCase()) {
+        const key = colIdx + "-" + tag;
+        return tagCounts[key] >= 2 && appearedTags.has(key);
+      }
+      return false;
+    });
+
+    row.fgh.forEach((tag, colIdx) => {
+      if (tag && tag === tag.toLowerCase()) appearedTags.add(colIdx + "-" + tag);
+    });
+
+    if (idx === 0) prefix = "";
+    else if (needsComma) prefix = "、";
+    else if (row.noLineBreak) prefix = "";
+    else prefix = "\n";
+
+    const colorNum = getCategoryColorClass(row.category).replace('bg-cat-', '');
+    const displayPrefix = prefix.replace(/\n/g, '<br>');
+    htmlContent += `${displayPrefix}<span class="result-word word-bg-${colorNum}">${row.text}</span>`;
+    plainText += prefix + row.text;
+  });
+
+  const resultArea = document.getElementById('result');
+  if (selected.length > 0) {
+    resultArea.innerHTML = htmlContent;
+  } else {
+    resultArea.innerText = "選択してください";
+  }
+
+  if (plainText) copyToClipboard(plainText);
+}
+
+function renderConfigTable() {
+  const tbody = document.getElementById('config-table-body');
+  tbody.innerHTML = masterData.map((row, i) => `
+    <tr class="fade-in">
+      <td class="col-category"><input type="text" class="form-control form-control-sm text-center" value="${row.category || ''}" onchange="updateMaster(${i}, 'category', this.value)"></td>
+      <td class="col-text"><input type="text" class="form-control form-control-sm fw-bold" value="${row.text || ''}" onchange="updateMaster(${i}, 'text', this.value)"></td>
+      <td class="col-tags text-center"><input type="text" class="form-control form-control-sm text-center px-1" value="${row.fgh[0]}" onchange="updateMasterFGH(${i}, 0, this.value)"></td>
+      <td class="col-tags text-center"><input type="text" class="form-control form-control-sm text-center px-1" value="${row.fgh[1]}" onchange="updateMasterFGH(${i}, 1, this.value)"></td>
+      <td class="col-tags text-center"><input type="text" class="form-control form-control-sm text-center px-1" value="${row.fgh[2]}" onchange="updateMasterFGH(${i}, 2, this.value)"></td>
+      <td class="col-check text-center"><input type="checkbox" class="form-check-input" style="width:1.5em;height:1.5em" ${row.noLineBreak ? 'checked' : ''} onchange="updateMaster(${i}, 'noLineBreak', this.checked)"></td>
+      <td class="col-action text-center">
+        <button class="btn btn-sm btn-outline-secondary" onclick="moveRow(${i}, -1)">▲</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="moveRow(${i}, 1)">▼</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="insertRow(${i})">＋</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteRow(${i})">削</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateMaster(i, prop, val) { masterData[i][prop] = val; isDirty = true; }
+function updateMasterFGH(i, col, val) { masterData[i].fgh[col] = val; isDirty = true; }
+
+function addNewRow() {
+  masterData.push({ category: '', text: '', fgh: ['', '', ''], noLineBreak: false, checked: false });
+  isDirty = true;
+  renderConfigTable();
+}
+
+function deleteRow(idx) {
+  if (confirm("この行を削除しますか？")) {
+    masterData.splice(idx, 1);
+    isDirty = true;
+    renderConfigTable();
+  }
+}
+
+function moveRow(idx, dir) {
+  const n = idx + dir;
+  if (n < 0 || n >= masterData.length) return;
+  [masterData[idx], masterData[n]] = [masterData[n], masterData[idx]];
+  isDirty = true;
+  renderConfigTable();
+}
+
+function insertRow(idx) {
+  masterData.splice(idx, 0, { category: '', text: '', fgh: ['', '', ''], noLineBreak: false, checked: false });
+  isDirty = true;
+  renderConfigTable();
+}
+
+// ===================================================================
+// お気に入りリンクの編集（旧スプレッドシート「リンク」シートの代替）
+// ===================================================================
+function renderLinkConfig() {
+  const tbody = document.getElementById('link-config-body');
+  if (!tbody) return;
+  tbody.innerHTML = linkData.map((link, i) => `
+    <tr>
+      <td><input type="text" class="form-control form-control-sm" placeholder="表示名" value="${link.name || ''}" onchange="updateLink(${i}, 'name', this.value)"></td>
+      <td><input type="url" class="form-control form-control-sm" placeholder="https://" value="${link.url || ''}" onchange="updateLink(${i}, 'url', this.value)"></td>
+      <td class="text-center"><button class="btn btn-sm btn-outline-danger" onclick="deleteLink(${i})">削除</button></td>
+    </tr>
+  `).join('') || `<tr><td colspan="3" class="text-center text-muted small py-3">登録されているリンクはありません</td></tr>`;
+}
+
+function addLink() {
+  linkData.push({ name: '', url: '' });
+  isDirty = true;
+  renderLinkConfig();
+}
+
+function updateLink(i, prop, val) {
+  linkData[i][prop] = val;
+  isDirty = true;
+}
+
+function deleteLink(i) {
+  if (confirm('このリンクを削除しますか？')) {
+    linkData.splice(i, 1);
+    isDirty = true;
+    renderLinkConfig();
+  }
+}
+
+// ===================================================================
+// 保存（旧: saveToServer → 新: この端末のlocalStorageに保存）
+// ===================================================================
+function saveLocalData(shouldSwitch = false) {
+  const savingModalElem = document.getElementById('savingModal');
+  const savingModal = new bootstrap.Modal(savingModalElem);
+  savingModal.show();
+
+  const dataToSave = masterData.map(row => ({ ...row, checked: false }));
+
+  setTimeout(() => {
+    try {
+      saveMasterDataLocal(dataToSave);
+      saveLinkDataLocal(linkData);
+      isDirty = false;
+      masterData = dataCleansing(dataToSave);
+
+      bootstrap.Modal.getInstance(savingModalElem).hide();
+
+      setTimeout(() => {
+        const completeModalElem = document.getElementById('completeModal');
+        const completeModal = new bootstrap.Modal(completeModalElem);
+        completeModal.show();
+
+        setTimeout(() => {
+          completeModal.hide();
+          setTimeout(() => {
+            if (shouldSwitch) {
+              executeSwitchMode('input');
+            } else {
+              renderAll();
+              renderLinks(linkData);
+            }
+          }, 400);
+        }, 1000);
+      }, 250);
+    } catch (err) {
+      bootstrap.Modal.getInstance(savingModalElem).hide();
+      alert("保存中にエラーが発生しました: " + err.message);
+    }
+  }, 250);
+}
+
+// ===================================================================
+// バックアップ（JSON書き出し）／復元（JSON読み込み）
+// ===================================================================
+function exportBackup() {
+  const payload = {
+    app: 'yakureki-template-app',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    masterData: masterData.map(row => ({ ...row, checked: false })),
+    linkData: linkData
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const ts = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const fname = `yakureki-backup-${ts.getFullYear()}${pad(ts.getMonth() + 1)}${pad(ts.getDate())}-${pad(ts.getHours())}${pad(ts.getMinutes())}.json`;
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importBackup(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data || !Array.isArray(data.masterData)) {
+        throw new Error('ファイルの形式が正しくありません（masterDataが見つかりません）');
+      }
+      if (!confirm('現在この端末に保存されているデータを、選択したファイルの内容で置き換えます。よろしいですか？')) {
+        evt.target.value = '';
+        return;
+      }
+      masterData = dataCleansing(data.masterData.map(row => ({
+        category: row.category || '',
+        text: row.text || '',
+        fgh: Array.isArray(row.fgh) ? row.fgh : ['', '', ''],
+        noLineBreak: !!row.noLineBreak,
+        checked: false
+      })));
+      linkData = Array.isArray(data.linkData) ? data.linkData : [];
+
+      saveMasterDataLocal(masterData);
+      saveLinkDataLocal(linkData);
+      isDirty = false;
+
+      renderAll();
+      renderLinks(linkData);
+      alert('復元が完了しました');
+    } catch (err) {
+      alert('読み込みに失敗しました: ' + err.message);
+    } finally {
+      evt.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetAllData() {
+  if (!confirm('この端末に保存されているすべてのデータを削除し、初期状態に戻します。\n先に「JSONファイルにバックアップ」を行うことをおすすめします。\n本当によろしいですか？')) return;
+  localStorage.removeItem(STORAGE_KEY_MASTER);
+  localStorage.removeItem(STORAGE_KEY_LINKS);
+  masterData = dataCleansing(getDefaultMasterData());
+  linkData = [];
+  isDirty = false;
+  saveMasterDataLocal(masterData);
+  saveLinkDataLocal(linkData);
+  renderAll();
+  renderLinks(linkData);
+  alert('初期状態に戻しました');
+}
+
+function copyToClipboard(text) {
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const b = document.getElementById('copy-status');
+    b.style.display = 'block';
+    setTimeout(() => b.style.display = 'none', 1200);
+  }).catch(() => { /* クリップボード権限が無い環境では無視 */ });
+}
+
+function showResetModal() {
+  if (masterData.some(r => r.checked)) {
+    new bootstrap.Modal(document.getElementById('resetModal')).show();
+  }
+}
+
+function executeReset() {
+  masterData.forEach(r => r.checked = false);
+  // ビューに応じて再描画
+  if (currentInputView === 'compact') renderCompactGrid();
+  else renderInputTable();
+  bootstrap.Modal.getInstance(document.getElementById('resetModal')).hide();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 入力モードのビュー状態
+let currentInputView = 'compact'; // デフォルトはコンパクト
+
+// コンパクト表示かどうかの判定（大文字のみのタグは除外）
+function isCompactVisible(row) {
+  const allTags = row.fgh.filter(t => t !== "");
+  // タグが全て大文字のもの（例："A"）は除外
+  // タグがない、または小文字を含むものは表示
+  if (allTags.length === 0) return true;
+  return allTags.some(t => t !== t.toUpperCase() || t === "");
+}
+
+// ビュー切り替え
+function switchInputView(view) {
+  currentInputView = view;
+  document.getElementById('view-detail').style.display = view === 'detail' ? 'block' : 'none';
+  document.getElementById('view-compact').style.display = view === 'compact' ? 'block' : 'none';
+  document.getElementById('btn-compact').className = view === 'compact'
+    ? 'btn btn-primary shadow-sm'
+    : 'btn btn-outline-secondary shadow-sm';
+  document.getElementById('btn-detail').className = view === 'detail'
+    ? 'btn btn-primary shadow-sm'
+    : 'btn btn-outline-secondary shadow-sm';
+
+  if (view === 'compact') renderCompactGrid();
+  else renderInputTable();
+}
+
+// コンパクトグリッド描画
+function renderCompactGrid() {
+  const grid = document.getElementById('compact-grid');
+  grid.innerHTML = masterData.map((row, i) => {
+    if (!isCompactVisible(row)) return ''; // 大文字タグのみは非表示
+    const colorClass = getCategoryColorClass(row.category);
+    const colorHex = getColorHex(colorClass);
+    const shortText = row.text.length > 10 ? row.text.slice(0, 10) + '…' : row.text;
+    return `
+      <div class="compact-item ${row.checked ? 'selected' : ''}" onclick="toggleCheck(${i})" title="${row.text}">
+        ${row.category ? `<div class="compact-category" style="background:${colorHex};">${row.category}</div>` : ''}
+        <div class="compact-text">${shortText}</div>
+      </div>
+    `;
+  }).join('');
+  generateMessage();
+}
+
+// カラークラスから色コードを返す
+function getColorHex(colorClass) {
+  const map = {
+    'bg-cat-0': '#6c757d',
+    'bg-cat-1': '#0d6efd',
+    'bg-cat-2': '#198754',
+    'bg-cat-3': '#dc3545',
+    'bg-cat-4': '#fd7e14',
+    'bg-cat-5': '#6f42c1',
+    'bg-cat-6': '#0dcaf0',
+    'bg-cat-7': '#d63384',
+  };
+  return map[colorClass] || '#6c757d';
+}
+</script>
+</body>
+</html>
