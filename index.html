@@ -492,10 +492,47 @@ const STORAGE_KEY_MASTER = 'yakureki_masterData';
 const STORAGE_KEY_LINKS  = 'yakureki_linkData';
 
 function getDefaultMasterData() {
+  // 初めてアクセスした利用者がすぐに試せるよう、薬局でよく使われる薬歴文言を
+  // 標準テンプレートとして組み込んでいます。内容は「設定・管理」から自由に
+  // 編集・追加・削除してください（実際の患者情報は入力しない前提の、定型文のひな形です）。
   return [
-    { category: '例', text: 'これはサンプルの文言です。「設定・管理」から自由に編集・削除してください。', fgh: ['', '', ''], noLineBreak: false, checked: false },
-    { category: '例', text: '同じ「区分」を持つ項目は同じ色で表示されます。', fgh: ['', '', ''], noLineBreak: false, checked: false },
-    { category: '例', text: 'F/G/Hに小文字でタグを入れると、同じタグを持つ項目同士が読点（、）でつながって表示されます。', fgh: ['', '', ''], noLineBreak: false, checked: false }
+    // --- 服薬状況 ---
+    { category: '服薬状況', text: '服薬状況良好で、飲み忘れなし。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '服薬状況', text: '残薬なし。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '服薬状況', text: '残薬あり。次回処方日数の調整を検討。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '服薬状況', text: 'ときどき飲み忘れることがあるとのこと。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '服薬状況', text: '一包化を提案し、了承を得た。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '服薬状況', text: 'お薬カレンダーの使用を提案した。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+
+    // --- 副作用・体調 ---
+    { category: '副作用・体調', text: '副作用と思われる自覚症状なし。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '副作用・体調', text: '眠気の訴えあり。経過観察とした。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '副作用・体調', text: '食欲不振の訴えなし。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '副作用・体調', text: '便秘の訴えあり。水分摂取を促した。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '副作用・体調', text: '体調に大きな変化なし。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+
+    // --- 生活状況 ---
+    { category: '生活状況', text: '睡眠状況は良好とのこと。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '生活状況', text: '食事は3食規則正しく摂取できている。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '生活状況', text: '自宅で血圧を測定し、安定しているとのこと。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '生活状況', text: 'OTC医薬品・サプリメントの併用なし。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+
+    // --- 説明・指導（tagで自動的に読点連結される例） ---
+    { category: '説明・指導', text: '血糖値について', fgh: ['tag_setsumei', '', ''], noLineBreak: true, checked: false },
+    { category: '説明・指導', text: '血圧値について', fgh: ['tag_setsumei', '', ''], noLineBreak: true, checked: false },
+    { category: '説明・指導', text: 'の説明をした。', fgh: ['', '', ''], noLineBreak: true, checked: false },
+    { category: '説明・指導', text: '副作用出現時はすぐに連絡するよう説明した。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '説明・指導', text: '飲み合わせ・飲酒時の注意点について説明した。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '説明・指導', text: '自己判断による中断をしないよう説明した。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+
+    // --- 検査値 ---
+    { category: '検査値', text: '直近の血液検査値に大きな異常なし。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '検査値', text: 'HbA1cは前回と同程度で経過。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+
+    // --- 次回・その他 ---
+    { category: '次回・その他', text: '次回来局時に体調変化の有無を確認予定。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '次回・その他', text: 'お薬手帳の持参がなかったため、次回持参を依頼した。', fgh: ['', '', ''], noLineBreak: false, checked: false },
+    { category: '次回・その他', text: '疑義照会の内容と回答を記録。', fgh: ['', '', ''], noLineBreak: false, checked: false }
   ];
 }
 
