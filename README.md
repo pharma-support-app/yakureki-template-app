@@ -1,0 +1,1 @@
+# yakureki-template-app
