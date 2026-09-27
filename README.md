@@ -140,7 +140,7 @@ https://<あなたのGitHubユーザー名>.github.io/yakureki-template-app/
 ```json
 {
   "app": "yakureki-template-app",
-  "version": 1,
+  "version": 2,
   "exportedAt": "2026-09-27T12:00:00.000Z",
   "masterData": [
     {
@@ -152,9 +152,14 @@ https://<あなたのGitHubユーザー名>.github.io/yakureki-template-app/
   ],
   "linkData": [
     { "name": "リンクの表示名", "url": "https://example.com" }
-  ]
+  ],
+  "viewMode": "detail"
 }
 ```
+
+- `viewMode`: 「設定・管理」の「表示の初期設定」で選んだ既定の表示モード（`"detail"`＝詳細モード／`"compact"`＝コンパクトモード）。
+  この項目を含まない古い形式のJSONファイルを復元した場合は、表示モードの設定は変更されません
+  （復元前の設定がそのまま維持されます）。
 
 - `fgh`: F/G/H列に相当するタグ。小文字で同じタグを複数の項目に付けると、
   選択時に読点（、）でつながって出力されます。大文字のみのタグはコンパクト表示から除外されます。
