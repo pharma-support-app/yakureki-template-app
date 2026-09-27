@@ -366,6 +366,22 @@
         </button>
       </div>
     </div>
+    <!-- 用意されているテンプレートの読み込み -->
+    <div class="local-panel">
+      <h6 class="fw-bold mb-2"><i class="bi bi-stack text-primary"></i>テンプレートの読み込み</h6>
+      <p class="text-muted small mb-2">
+        用意されている初期データを読み込んで、現在の「項目」と「お気に入りリンク」をまとめて置き換えます。
+        読み込むと今の内容は失われるため、必要であれば先に上の「JSONファイルにバックアップ」を行ってください。
+      </p>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-primary" onclick="loadPresetTemplate(1)">
+          初期状態1（標準テンプレート）を読み込む
+        </button>
+        <button class="btn btn-outline-primary" onclick="loadPresetTemplate(2)">
+          初期状態2（薬効説明テンプレート）を読み込む
+        </button>
+      </div>
+    </div>
 
     <!-- お気に入りリンク管理 -->
     <div class="local-panel">
@@ -534,6 +550,37 @@ function getDefaultMasterData() {
     { category: '次回・その他', text: 'お薬手帳の持参がなかったため、次回持参を依頼した。', fgh: ['', '', ''], noLineBreak: false, checked: false },
     { category: '次回・その他', text: '疑義照会の内容と回答を記録。', fgh: ['', '', ''], noLineBreak: false, checked: false }
   ];
+}
+
+function getDefaultMasterData2() {
+  // 実際に運用されているスプレッドシートの内容を「初期状態2（薬効説明テンプレート）」として組み込み。
+  // F/G/H列の小文字タグ（例: e）を選択すると、対応する大文字タグの行（例: E、改行無し）が
+  // 自動でチェックされ、薬品名の直後に説明文が改行なしで続く形になります。
+  return [{"category": "鎮咳", "text": "ﾘﾝｺﾃﾞ：せきや痛みを抑えたり、下痢を止める薬です。", "fgh": ["", "a", ""], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "酸化ﾏｸﾞﾈｼｳﾑはﾘﾝｺﾃﾞのSEの便秘症状を予防・緩和します。", "fgh": ["", "A", ""], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "ﾘﾝｺﾃﾞで吐き気が起こる事があります", "fgh": ["", "A", ""], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "眠気起こることあり　運転は控えて。", "fgh": ["", "A", ""], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "ﾌｽｺﾃﾞｼﾛｯﾌﾟ：せきを抑える薬です。１回4mL　冷所保管", "fgh": ["", "", "a"], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "ﾚｽﾌﾟﾚﾝ", "fgh": ["e", "", ""], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "ﾒｼﾞｺﾝ", "fgh": ["e", "", ""], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "ﾃﾞｷｽﾄﾛﾒﾄﾙﾌｧﾝ", "fgh": ["e", "", ""], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "ﾌｽﾀｿﾞｰﾙ", "fgh": ["e", "", ""], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "：せきを抑える薬です。", "fgh": ["E", "", ""], "noLineBreak": true, "checked": false}, {"category": "鎮咳", "text": "麦門冬湯：激しいせきを鎮める漢方薬です。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "鎮咳", "text": "トーワチーム配合顆粒：風邪などによる熱、痛み、鼻水、鼻づまりなどの諸症状を緩和する薬です。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "去痰", "text": "ｶﾙﾎﾞｼｽﾃｲﾝ", "fgh": ["d", "", ""], "noLineBreak": false, "checked": false}, {"category": "去痰", "text": "ｱﾝﾌﾞﾛｷｿｰﾙ", "fgh": ["d", "", ""], "noLineBreak": false, "checked": false}, {"category": "去痰", "text": "：たんや鼻汁を出しやすくする薬です。気道粘膜の状態改善にも効果が期待できます。", "fgh": ["D", "", ""], "noLineBreak": true, "checked": false}, {"category": "去痰", "text": "ｶﾙﾎﾞｼｽﾃｲﾝSyr：痰や鼻水を出しやすくします。気道粘膜の状態改善にも効果が期待できます。　1回6mL　1日2回", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "去痰", "text": "ｶﾙﾎﾞｼｽﾃｲﾝ・ﾌﾟﾛｶﾃﾛｰﾙMIX：気管支を拡げて呼吸を楽にし咳を改善。痰や鼻水を出しやすくします。1回5ml、1日2回", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "ﾓﾝﾃﾙｶｽﾄ", "fgh": ["a", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "ﾚﾎﾞｾﾁﾘｼﾞﾝ", "fgh": ["a", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "ｵﾛﾊﾟﾀｼﾞﾝ", "fgh": ["a", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "ｵｷｻﾄﾐﾄﾞ", "fgh": ["a", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "ﾌｪｷｿﾌｪﾅｼﾞﾝ", "fgh": ["a", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "ﾋﾞﾗﾉｱ", "fgh": ["a", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "ｾﾚｽﾀﾐﾝ", "fgh": ["a", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "：ｱﾚﾙｷﾞｰ性鼻炎や皮膚疾患に伴うかゆみ等を抑えます。", "fgh": ["A", "", ""], "noLineBreak": true, "checked": false}, {"category": "アレルギー", "text": "眠気起こることあり", "fgh": ["A", "", "A"], "noLineBreak": true, "checked": false}, {"category": "アレルギー", "text": "ﾓﾝﾃﾙｶｽﾄ細粒４ｍｇ：咳やゼーゼーなど予防する薬です。鼻水などアレルギー症状抑える作用もあります。光に不安定なので開封後は早めに服用を。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "ﾓﾝﾃﾙｶｽﾄﾁｭｱﾌﾞﾙ：気管支ぜんそくに伴う症状を起こりにくくする薬です。１日１回寝る前に服用するよう指導。この薬は口中で溶かすか、かみ砕いて服用するよう指導。または水と一緒に服用することも可能であることを指導。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "アレルギー", "text": "ﾓﾒﾀｿﾞﾝ：アレルギー性鼻炎の薬です。鼻をかんでから本剤を良く振って使用して下さい。毎日同じくらいの時間に使用。お風呂上りなど鼻の通りが良い状態で使用することが望ましい。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "解熱鎮痛", "text": "ﾛｷｿﾌﾟﾛﾌｪﾝ:炎症を和らげ、痛みを抑えたり、熱を下げる薬です。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "解熱鎮痛", "text": "ﾚﾊﾞﾐﾋﾟﾄﾞ：胃粘膜を保護修復する薬です。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "解熱鎮痛", "text": "ｱｾﾄｱﾐﾉﾌｪﾝ：痛みを抑えたり、熱を下げる薬です。4-6時間空けて1日3回まで", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "解熱鎮痛", "text": "ｱﾝﾋﾊﾞ坐剤：熱や痛みを抑えます。１回2/3個使用。線に沿ってはさみで切って使用してください。冷所保管。4-6時間空けて1日3回まで", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "解熱鎮痛", "text": "ﾄｰﾜﾁｰﾑ：風邪などによる熱、痛み、鼻水、鼻づまりなどの諸症状を緩和する薬です。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "その他", "text": "ﾌﾟﾘﾋﾞﾅ：鼻の充血を取り、鼻づまりなどの症状を改善する点鼻薬です。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "その他", "text": "ﾄﾘﾒﾌﾞﾁﾝ：便通を整える薬です。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "気管支", "text": "ﾚﾙﾍﾞｱ", "fgh": ["f", "", ""], "noLineBreak": false, "checked": false}, {"category": "気管支", "text": "ﾌﾞﾃﾞﾎﾙ", "fgh": ["f", "", ""], "noLineBreak": false, "checked": false}, {"category": "気管支", "text": "：気管支を広げ、気道の炎症を抑えて呼吸を楽にします。症状なくても毎日続けること", "fgh": ["F", "", ""], "noLineBreak": true, "checked": false}, {"category": "気管支", "text": "ﾎｸﾅﾘﾝ:気管支を拡げて呼吸を楽にし咳を改善。毎日1回貼り替え。かぶれを防ぐため場所は変えること。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "気管支", "text": "ﾌﾟﾚﾄﾞﾆﾝ：炎症を抑えるお薬です。1回4錠", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "気管支", "text": "終了日はそれぞれ異なるが飲み切り終了でよいことを確認", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "コロフル", "text": "ｿﾞｺｰﾊﾞ:コロナの治療薬です。初日は食事に関係なく帰宅後なるべく早めに3T服用。2日目以降は1日1Tを服用し合計5日間飲み切る。必ず５日間服用するよう指導。併用注意薬確認すみ", "fgh": ["c", "", ""], "noLineBreak": false, "checked": false}, {"category": "コロフル", "text": "ｿﾞﾌﾙｰｻﾞ:インフルエンザの治療薬です。食事に関係なく帰宅後なるべく早めに服用。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "コロフル", "text": "ｵｾﾙﾀﾐﾋﾞﾙ：インフルエンザの治療薬です。１回目は食事に関係なく帰宅後なるべく早めに服用。２回目は通常通り夕食後に服用。", "fgh": ["c", "", ""], "noLineBreak": false, "checked": false}, {"category": "コロフル", "text": "ｲﾅﾋﾞﾙ：抗インフルエンザ薬です。帰宅後なるべく早めに使用。使用初めてとのこと使い方について説明する", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "抗生剤", "text": "ｸﾗﾘｽﾛﾏｲｼﾝ：抗生剤です。１回目は食事に関係なく帰宅後なるべく早めに服用。２回目は通常通り夕食後に服用。", "fgh": ["c", "", ""], "noLineBreak": false, "checked": false}, {"category": "抗生剤", "text": "ｱﾓｷｼｼﾘﾝ：抗生剤です。本日は帰宅後食事に関わらず服用可。２回目は６時間以上あけて内服可。", "fgh": ["c", "", ""], "noLineBreak": false, "checked": false}, {"category": "抗生剤", "text": "ｼﾞｽﾛﾏｯｸ：抗生剤です。今日の昼から服用。１回2錠。明日、明後日まで服用し症状落ち着いても飲み切ること。服用後1週間程度効果持続するため医療機関に受診される場合は申し出ること", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "抗生剤", "text": "症状落ち着いても飲み切り終了", "fgh": ["C", "", ""], "noLineBreak": true, "checked": false}, {"category": "抗生剤", "text": "ﾗｯｸﾋﾞｰ：整腸剤です。お腹の調子を整え、正常な状態にしていきます。下痢にもゆっくり効くのできちんと飲み切りましょう", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "抗生剤", "text": "ﾋﾞｵﾌｪﾙﾐﾝR：整腸剤です。抗生剤で便が緩くなることがあるため、それを防止・緩和します。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "抗生剤", "text": "ﾄﾗﾈｷｻﾑ酸：出血を抑えたり、炎症や湿疹、じんましんを改善する薬です。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}, {"category": "抗生剤", "text": "ＳＰﾄﾛｰﾁ：のどや口の中の細菌や病原性のかび(真菌)を殺菌消毒するトローチです。口の中でゆっくり溶かすよう説明(できるだけ長く口の中に含むことにより有効成分が口中に長時間保持される)。使用後３０分くらいは飲食をしないよう指導。", "fgh": ["", "", ""], "noLineBreak": false, "checked": false}];
+}
+
+function getDefaultLinkData2() {
+  return [{"name": "画像説明", "url": "https://meds.qlifepro.com/detail/2171022F3030/%E3%82%A2%E3%83%A0%E3%83%AD%E3%82%B8%E3%83%94%E3%83%B3%EF%BC%AF%EF%BC%A4%E9%8C%A0%EF%BC%92%EF%BC%8E%EF%BC%95%EF%BD%8D%EF%BD%87%E3%80%8C%E3%83%88%E3%83%BC%E3%83%AF%E3%80%8D#google_vignette"}, {"name": "白鷺病院", "url": "https://www.shirasagi-hp.or.jp/goda/fmly/gate.html"}];
+}
+
+function loadPresetTemplate(n) {
+  const label = (n === 2) ? '初期状態2（薬効説明テンプレート）' : '初期状態1（標準テンプレート）';
+  if (!confirm('現在の「項目」と「お気に入りリンク」のデータを、' + label + 'の内容で置き換えます。\n先に「JSONファイルにバックアップ」しておくことをおすすめします。\n本当によろしいですか？')) {
+    return;
+  }
+  if (n === 2) {
+    masterData = dataCleansing(getDefaultMasterData2());
+    linkData = getDefaultLinkData2();
+  } else {
+    masterData = dataCleansing(getDefaultMasterData());
+    linkData = [];
+  }
+  isDirty = false;
+  saveMasterDataLocal(masterData);
+  saveLinkDataLocal(linkData);
+  renderAll();
+  renderLinks(linkData);
+  alert(label + 'を読み込みました');
 }
 
 function loadMasterData() {
