@@ -345,6 +345,21 @@
   <!-- 【設定・管理モード】 -->
   <div id="config-section" class="config-ui mode-content">
 
+    <!-- 表示の初期設定 -->
+    <div class="local-panel">
+      <h6 class="fw-bold mb-2"><i class="bi bi-sliders text-primary"></i>表示の初期設定</h6>
+      <p class="text-muted small mb-2">
+        次回このアプリを開いたとき、または「入力モード」に切り替えたときに最初に表示する画面を選べます。
+      </p>
+      <div class="btn-group" role="group" aria-label="既定の表示モード">
+        <input type="radio" class="btn-check" name="defaultViewMode" id="defaultViewDetail" autocomplete="off" onchange="setDefaultViewMode('detail')">
+        <label class="btn btn-outline-primary" for="defaultViewDetail"><i class="bi bi-list-ul"></i> 詳細モード</label>
+
+        <input type="radio" class="btn-check" name="defaultViewMode" id="defaultViewCompact" autocomplete="off" onchange="setDefaultViewMode('compact')">
+        <label class="btn btn-outline-primary" for="defaultViewCompact"><i class="bi bi-grid"></i> コンパクトモード</label>
+      </div>
+    </div>
+
     <!-- データのバックアップ／復元 -->
     <div class="local-panel">
       <h6 class="fw-bold mb-2"><i class="bi bi-hdd-fill text-primary"></i>データの保存場所について</h6>
@@ -506,6 +521,33 @@
 // ===================================================================
 const STORAGE_KEY_MASTER = 'yakureki_masterData';
 const STORAGE_KEY_LINKS  = 'yakureki_linkData';
+const STORAGE_KEY_VIEW_MODE = 'yakureki_defaultViewMode';
+
+// 起動時に最初に開く表示モード（'detail' または 'compact'）。未設定時は詳細モード。
+function loadDefaultViewMode() {
+  try {
+    const v = localStorage.getItem(STORAGE_KEY_VIEW_MODE);
+    if (v === 'detail' || v === 'compact') return v;
+  } catch (e) {
+    console.error('表示設定の読み込みに失敗しました', e);
+  }
+  return 'detail';
+}
+
+function setDefaultViewMode(mode) {
+  if (mode !== 'detail' && mode !== 'compact') return;
+  localStorage.setItem(STORAGE_KEY_VIEW_MODE, mode);
+  currentInputView = mode; // 次に「入力モード」へ切り替えたときにもすぐ反映されるように
+  renderDefaultViewModeSetting();
+}
+
+function renderDefaultViewModeSetting() {
+  const mode = loadDefaultViewMode();
+  const detailRadio = document.getElementById('defaultViewDetail');
+  const compactRadio = document.getElementById('defaultViewCompact');
+  if (detailRadio) detailRadio.checked = (mode === 'detail');
+  if (compactRadio) compactRadio.checked = (mode === 'compact');
+}
 
 function getDefaultMasterData() {
   // 初めてアクセスした利用者がすぐに試せるよう、薬局でよく使われる薬歴文言を
@@ -623,10 +665,11 @@ window.onload = () => {
   masterData = dataCleansing(masterData);
   renderLinks(linkData);
   renderAll();
-  // デフォルトでコンパクトモードを起動
-  switchInputView('compact');
+  // 「設定・管理」で選ばれている既定の表示モードで起動（未設定時は詳細モード）
+  switchInputView(loadDefaultViewMode());
   document.getElementById('btn-compact').style.display = 'inline-flex';
   document.getElementById('btn-detail').style.display = 'inline-flex';
+  renderDefaultViewModeSetting();
 };
 
 function renderLinks(links) {
@@ -918,10 +961,11 @@ function saveLocalData(shouldSwitch = false) {
 function exportBackup() {
   const payload = {
     app: 'yakureki-template-app',
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     masterData: masterData.map(row => ({ ...row, checked: false })),
-    linkData: linkData
+    linkData: linkData,
+    viewMode: loadDefaultViewMode() // 既定の表示モード（詳細／コンパクト）
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -964,6 +1008,12 @@ function importBackup(evt) {
       saveMasterDataLocal(masterData);
       saveLinkDataLocal(linkData);
       isDirty = false;
+
+      // 表示モード設定が含まれているファイルの場合は、それも復元する（古い形式のファイルには含まれないため任意項目扱い）
+      if (data.viewMode === 'detail' || data.viewMode === 'compact') {
+        setDefaultViewMode(data.viewMode);
+        switchInputView(currentInputView);
+      }
 
       renderAll();
       renderLinks(linkData);
@@ -1016,7 +1066,7 @@ function executeReset() {
 }
 
 // 入力モードのビュー状態
-let currentInputView = 'compact'; // デフォルトはコンパクト
+let currentInputView = loadDefaultViewMode(); // 「設定・管理」で選ばれた既定モード（未設定時は詳細モード）
 
 // コンパクト表示かどうかの判定（大文字のみのタグは除外）
 function isCompactVisible(row) {
